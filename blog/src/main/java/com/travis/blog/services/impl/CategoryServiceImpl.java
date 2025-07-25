@@ -51,4 +51,9 @@ public class CategoryServiceImpl implements CategoryService
         }
 
     }
+
+    @Override
+    public Category getCategoryById(UUID id) {
+        return null;
+    }
 }
