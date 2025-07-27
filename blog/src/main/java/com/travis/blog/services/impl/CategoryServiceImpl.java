@@ -3,6 +3,7 @@ package com.travis.blog.services.impl;
 import com.travis.blog.domain.entities.Category;
 import com.travis.blog.repositories.CategoryRepository;
 import com.travis.blog.services.CategoryService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -54,6 +55,6 @@ public class CategoryServiceImpl implements CategoryService
 
     @Override
     public Category getCategoryById(UUID id) {
-        return null;
+       return categoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Category not found with id"));
     }
 }

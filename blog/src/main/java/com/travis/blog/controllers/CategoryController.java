@@ -16,38 +16,40 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping(path = "/api/v1/categories")
-@RequiredArgsConstructor
-public class CategoryController
-{
+@RequiredArgsConstructor // Injects service and mapper through constructor
+public class CategoryController {
 
     private final CategoryService categoryService;
     private final CategoryMapper categoryMapper;
 
-
+    // Get all categories as DTOs
     @GetMapping()
-    public ResponseEntity<List<CategoryDto>> listCategories()
-   {
-     List<CategoryDto> categories = categoryService.listCategories()
-                                                   .stream().map(category -> categoryMapper
-                                                   .toDto(category)).toList();
+    public ResponseEntity<List<CategoryDto>> listCategories() {
+        List<CategoryDto> categories = categoryService.listCategories()
+                .stream()
+                .map(categoryMapper::toDto) // convert each Category to DTO
+                .toList();
 
-     return ResponseEntity.ok(categories);
-   }
+        return ResponseEntity.ok(categories);
+    }
 
-   @PostMapping
-   public ResponseEntity<CategoryDto> createCategory(@Valid @RequestBody CreateCategoryRequest createCategoryRequest)
-   {
-     Category categoryToCreate = categoryMapper.toEntity(createCategoryRequest);
-     Category savedCategory = categoryService.createCategory(categoryToCreate);
+    // Create a new category from request body
+    @PostMapping
+    public ResponseEntity<CategoryDto> createCategory(@Valid @RequestBody CreateCategoryRequest createCategoryRequest) {
+        // Convert request DTO to entity
+        Category categoryToCreate = categoryMapper.toEntity(createCategoryRequest);
 
-     return new ResponseEntity<>(categoryMapper.toDto(savedCategory), HttpStatus.CREATED);
-   }
+        // Save it using the service
+        Category savedCategory = categoryService.createCategory(categoryToCreate);
 
-   @DeleteMapping(path = "/{id}")
-   public ResponseEntity<Void> deleteCategory(@PathVariable UUID id)
-   {
-     categoryService.deleteCategory(id);
+        // Return the created category as DTO
+        return new ResponseEntity<>(categoryMapper.toDto(savedCategory), HttpStatus.CREATED);
+    }
 
-     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-   }
+    // Delete a category by its ID
+    @DeleteMapping(path = "/{id}")
+    public ResponseEntity<Void> deleteCategory(@PathVariable UUID id) {
+        categoryService.deleteCategory(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 204: successfully deleted
+    }
 }

@@ -13,20 +13,31 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(path = "/api/v1/auth/login")
-@RequiredArgsConstructor
-public class AuthController
-{
-  private final AuthenticationService authenticationService;
+@RequiredArgsConstructor // generates a constructor for the final field
+public class AuthController {
 
-  @PostMapping
-  public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest)
-  {
-      UserDetails userDetails = authenticationService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
+    private final AuthenticationService authenticationService;
 
-     String tokenValue = authenticationService.generateToken(userDetails);
+    // Endpoint to handle login requests
+    @PostMapping
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
 
-    AuthResponse authResponse = AuthResponse.builder().token(tokenValue).expiresIn(86400).build();
+        // Validate the user credentials
+        UserDetails userDetails = authenticationService.authenticate(
+                loginRequest.getEmail(),
+                loginRequest.getPassword()
+        );
 
-    return ResponseEntity.ok(authResponse);
-  }
+        // Generate a JWT token for the authenticated user
+        String tokenValue = authenticationService.generateToken(userDetails);
+
+        // Construct the response with the token and expiry (24 hours = 86400 secs)
+        AuthResponse authResponse = AuthResponse.builder()
+                .token(tokenValue)
+                .expiresIn(86400)
+                .build();
+
+        // Send the token back to the client
+        return ResponseEntity.ok(authResponse);
+    }
 }
