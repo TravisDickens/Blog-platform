@@ -14,47 +14,45 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class CategoryServiceImpl implements CategoryService
-{
+public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
 
     @Override
     public List<Category> listCategories() {
+        // Fetch all categories with post count (optimized via custom query)
         return categoryRepository.findAllWithPostCount();
     }
 
     @Override
     @Transactional
     public Category createCategory(Category category) {
+        // Prevent duplicate category names (case-insensitive)
+        if (categoryRepository.existsByNameIgnoreCase(category.getName())) {
+            throw new IllegalArgumentException("Category already exists");
+        }
 
-       if( categoryRepository.existsByNameIgnoreCase(category.getName()))
-       {
-           throw new IllegalArgumentException("Category already exists");
-       }
-
-       return  categoryRepository.save(category);
+        return categoryRepository.save(category);
     }
 
     @Override
-    public void deleteCategory(UUID id)
-    {
+    public void deleteCategory(UUID id) {
         Optional<Category> category = categoryRepository.findById(id);
 
-        if(category.isPresent())
-        {
-            if (category.get().getPosts().size() > 0)
-            {
+        if (category.isPresent()) {
+            // Prevent deletion if the category has posts linked to it
+            if (category.get().getPosts().size() > 0) {
                 throw new IllegalStateException("Category has posts associated with it");
             }
 
             categoryRepository.deleteById(id);
         }
-
     }
 
     @Override
     public Category getCategoryById(UUID id) {
-       return categoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Category not found with id"));
+        // Throw if no category is found with the given ID
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Category not found with id"));
     }
 }

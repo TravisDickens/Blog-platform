@@ -1,8 +1,10 @@
 package com.travis.blog.mappers;
 
 import com.travis.blog.domain.CreatePostRequest;
+import com.travis.blog.domain.UpdatePostRequest;
 import com.travis.blog.domain.dto.CreatePostRequestDto;
 import com.travis.blog.domain.dto.PostDto;
+import com.travis.blog.domain.dto.UpdatePostRequestDto;
 import com.travis.blog.domain.entities.Post;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -19,4 +21,6 @@ public interface PostMapper {
     PostDto toDto(Post post);
 
     CreatePostRequest toCreatePostRequest(CreatePostRequestDto dto);
+
+    UpdatePostRequest toUpdatePostRequest(UpdatePostRequestDto dto);
 }

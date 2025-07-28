@@ -20,8 +20,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class AuthenticationServiceImpl implements AuthenticationService
-{
+public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
@@ -29,50 +28,52 @@ public class AuthenticationServiceImpl implements AuthenticationService
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private long jwtExpiryMs = 86400000L;
+    private long jwtExpiryMs = 86400000L; // 1 day in milliseconds
 
     @Override
     public UserDetails authenticate(String email, String password) {
+        // Authenticate user via Spring Security's manager
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(email, password)
+        );
 
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email,password));
-
-       UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-
-       return userDetails;
+        // If successful, return UserDetails
+        return userDetailsService.loadUserByUsername(email);
     }
 
     @Override
     public String generateToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
 
-        Map<String,Object> claims = new HashMap<>();
-
-       return Jwts.builder().setClaims(claims)
-                      .setSubject(userDetails.getUsername())
-                      .setIssuedAt(new Date(System.currentTimeMillis()))
-                      .setExpiration(new Date(System.currentTimeMillis() + jwtExpiryMs))
-                      .signWith(getSignInKey(), SignatureAlgorithm.HS256)
-                      .compact();
-
-
+        return Jwts.builder()
+                .setClaims(claims) // Extra payload data (optional)
+                .setSubject(userDetails.getUsername()) // Typically email or username
+                .setIssuedAt(new Date()) // Token creation timestamp
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiryMs)) // Expiry time
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256) // Sign with secret key
+                .compact();
     }
 
     @Override
     public UserDetails validateToken(String token) {
+        // Extract username from token and load user
         String username = extractUsername(token);
         return userDetailsService.loadUserByUsername(username);
     }
 
-    private String extractUsername(String token)
-    {
-       Claims claims = Jwts.parserBuilder().setSigningKey(getSignInKey()).build().parseClaimsJws(token).getBody();
+    private String extractUsername(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getSignInKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
 
-       return claims.getSubject();
+        return claims.getSubject(); // subject contains username/email
     }
 
-    private Key getSignInKey()
-    {
-       byte[] keyBytes = secretKey.getBytes();
-
-       return Keys.hmacShaKeyFor(keyBytes);
+    private Key getSignInKey() {
+        // Convert secret string to signing key
+        byte[] keyBytes = secretKey.getBytes();
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 }

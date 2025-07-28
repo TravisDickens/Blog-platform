@@ -31,7 +31,7 @@ public class CreatePostRequestDto
    private UUID categoryId;
 
    @Builder.Default
-   @Size(max = 50000, message = "Maximum 10 tags is allowed")
+   @Size(max = 10, message = "Maximum 10 tags is allowed")
    private Set<UUID> tagIds = new HashSet<>();
 
    @NotNull(message = "Status is required")

@@ -6,18 +6,21 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
 
+// Custom implementation of UserDetailsService for Spring Security
 @RequiredArgsConstructor
-public class BlogUserDetailsService implements UserDetailsService
-{
+public class BlogUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
+    // Load user details by email (used during authentication)
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-      User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("user not found with email"));
+        // Look up user by email in the database
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("user not found with email"));
 
-      return new BlogUserDetails(user);
+        // Wrap the User entity in a custom UserDetails implementation
+        return new BlogUserDetails(user);
     }
 }
